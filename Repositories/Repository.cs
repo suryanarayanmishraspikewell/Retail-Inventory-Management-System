@@ -31,16 +31,19 @@ namespace InventoryManagementAPI.Repositories
 
         public async Task<T> GetById(int id) => await _dbSet.FindAsync(id);
 
-        public async Task Add(T entity)
+        public async Task<T> Add(T entity)
         {
             await _dbSet.AddAsync(entity);
             await _context.SaveChangesAsync();
+            return entity;
         }
 
-        public async Task Update(T entity)
+        public async Task<T> Update(T entity)
         {
             _dbSet.Update(entity);
+            //_context.Users.Add(entity);
             await _context.SaveChangesAsync();
+            return entity;
         }
 
         public async Task Delete(int id)

@@ -10,8 +10,10 @@
 //    }
 //}
 
+using InventoryManagementAPI.DTOs;
 using InventoryManagementAPI.Models;
 using InventoryManagementAPI.Repositories;
+using InventoryManagementAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -23,10 +25,12 @@ namespace InventoryManagementAPI.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IRepository<Order> _orderRepository;
+        private readonly IOrderService _orderService;
 
-        public OrdersController(IRepository<Order> orderRepository)
+        public OrdersController(IRepository<Order> orderRepository, IOrderService orderservice)
         {
             _orderRepository = orderRepository;
+            _orderService = orderservice;
         }
 
         [HttpGet]
@@ -44,10 +48,22 @@ namespace InventoryManagementAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> CreateOrder(Order order)
+        public async Task<ActionResult> CreateOrder(OrderRequestDto order)
         {
-            await _orderRepository.Add(order);
-            return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);
+            try
+            {
+                //await _orderRepository.Add(order);
+                var newOrder = await _orderService.CreateOrder(order);
+                return CreatedAtAction(nameof(GetOrder), new { id = newOrder.OrderId }, newOrder);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message});
+            }
+            catch (Exception ex) {
+                return StatusCode(500, new {message = ex.Message});
+            }
+            
         }
 
         [HttpPut("{id}")]
